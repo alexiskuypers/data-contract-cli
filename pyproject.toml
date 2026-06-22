@@ -1,0 +1,16 @@
+[project]
+name = "data-contract-cli"
+version = "0.1.0"
+dependencies = []
+requires-python = ">=3.12"
+
+description = "A Python CLI for validating and normalizing CSV files using YAML data contracts."
+readme = "README.md"
+
+
+[project.urls]
+Repository = "https://github.com/alexiskuypers/data-contract-cli"
+
+
+[project.optional-dependencies]
+dev = ["pytest>=9.1.1" ]
