@@ -1,0 +1,74 @@
+# YAML contract
+
+
+columns:
+  invoice_id:
+    type: str
+    required: true
+    nullable: false
+    unique: true
+    rules: {starts_with: "INV-"}
+    transformations: [strip, upper]
+
+
+  customer_name:
+    type: str
+    required: true
+    nullable: false
+    unique: false
+    rules: {}
+    transformations: [stip, collapse_spaces, title]
+
+
+  email:
+    type: email
+    required: true
+    nullable: false
+    unique: false
+    rules: {}
+    transformations: [strip, lower]
+
+
+  quantity:
+    type: int
+    required: true
+    nullable: false
+    unique: false
+    rules: {min: 1, max: 100}
+    transformations: []
+
+
+  amount:
+    type: decimal
+    required: true
+    nullable: false
+    unique: false
+    rules: {min: 1, max: 2500}
+    transformations: [round_2]
+
+
+  invoice_date:
+    type: date
+    required: true
+    nullable: false
+    unique: false
+    rules: {}
+    transformations: []
+
+
+  paid:
+    type: bool
+    required: true
+    nullable: false
+    unique: false
+    rules: {}
+    transformations: []
+
+
+  status:
+    type: str
+    required: true
+    nullable: false
+    unique: false
+    rules: {allowed_values: [paid, pending, cancelled]}
+    transformations: [strip, lower]

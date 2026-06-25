@@ -1,0 +1,16 @@
+invoice_id,customer_name,email,quantity,amount,invoice_date,paid,status
+ INV-001 ,alice dupont,ALICE@EXAMPLE.COM,2,120.50,2026-06-01,true,paid
+INV-002,  bob martin  ,bob.martin@example.com,1,75.00,2026-06-03,false,pending
+INV-003,Chloé Bernard, chloe.bernard@example.com ,3,210.90,2026-06-05,true,paid
+INV-004,David Leroy,david.leroy-example.com,2,95.00,2026-06-08,false,pending
+INV-005,Emma Dubois,emma.dubois@example.com,0,49.99,2026-06-10,false,pending
+INV-006,Farid Amrani,farid.amrani@example.com,4,-15.00,2026-06-11,true,paid
+INV-007,  georges   petit ,GEORGES.PETIT@EXAMPLE.COM,1,130.00,2026-02-30,true,paid
+INV-008,Hana El Idrissi,hana@example.com,2,5001.00,2026-06-13,false,pending
+INV-009,Inès Moreau,,1,89.90,2026-06-14,false,pending
+INV-010,Julien Robert,julien.robert@example.com,2,150.00,2026-06-15,yes,paid
+INV-011,Karim Benali,karim.benali@example.com,1,60.00,2026-06-16,true,unknown
+INV-003,Laura Simon,laura.simon@example.com,2,115.00,2026-06-17,false,pending
+INV-013,MARC  DUPONT,  MARC.DUPONT@EXAMPLE.COM  ,5,320.00,2026-06-18,true,paid
+,Nora Fontaine,nora.fontaine@example.com,1,45.00,2026-06-19,false,pending
+INV-015,Oscar Laurent,oscar.laurent@example.com,12,999.99,2026-06-20,false,cancelled
