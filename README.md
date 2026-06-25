@@ -33,6 +33,48 @@ cd data-contract-cli
 
 The installation process will be documented once the first executable version is available.
 
+## Strict and permissive modes
+
+The validation command can run in either strict or permissive mode.
+
+### Strict mode
+
+In strict mode, the program stops when the CSV structure does not exactly match the contract.
+
+The program stops if:
+
+* an expected column is missing;
+* the CSV contains a column that is not defined in the contract.
+
+When the program stops:
+
+* no output files are generated;
+* an error message is displayed in the terminal;
+* the command returns a non-zero exit code;
+* technical details are written to the logs.
+
+### Permissive mode
+
+In permissive mode, the program allows some differences between the CSV and the contract.
+
+The program stops if:
+
+* a column marked as `required: true` is missing.
+
+The program continues if:
+
+* an optional column is missing;
+* the CSV contains a column that is not defined in the contract.
+
+When processing continues:
+
+* unexpected columns are preserved without modification;
+* missing optional columns are reported;
+* transformations and validation rules are applied only to matching columns;
+* the clean CSV, error CSV and summary JSON are generated;
+* warnings are displayed in the terminal;
+* complete details are included in the summary JSON and logs.
+
 ## Planned usage
 
 Validate a CSV file:
