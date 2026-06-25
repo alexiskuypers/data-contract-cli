@@ -1,0 +1,18 @@
+# Yaml contract
+
+
+# Add each CSV column under "columns".
+# Use the CSV header as the column name.
+
+#columns:
+#  name:
+#    type: str
+#    required: true
+#    nullable: false
+#    unique: false
+#    rules: {min_length: 2, max_length: 12}
+#    transformations: [strip, title]
+
+# Add name, type, required, nullable, unique, rules and transformations
+
+columns: {}
