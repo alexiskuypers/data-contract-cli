@@ -17,7 +17,7 @@ columns:
     nullable: false
     unique: false
     rules: {}
-    transformations: [stip, collapse_spaces, title]
+    transformations: [strip, collapse_spaces, title]
 
 
   email:
@@ -44,7 +44,7 @@ columns:
     nullable: false
     unique: false
     rules: {min: 1, max: 2500}
-    transformations: [round_2]
+    transformations: [format_decimal]
 
 
   invoice_date:
@@ -53,7 +53,7 @@ columns:
     nullable: false
     unique: false
     rules: {}
-    transformations: []
+    transformations: [normalize_date]
 
 
   paid:
