@@ -1,0 +1,138 @@
+import pytest, yaml
+from typing import Any
+
+from src.data_contract_cli.exceptions import ApplicationError, YAMLContractError
+from src.data_contract_cli.contract import (
+    RULES,
+    TRANSFORMATION,
+    load_contract,
+    validate_global_structure,
+    validate_internal_structure,
+    normalize_global_structure,
+    validate_type,
+    validate_column_flags,
+)
+
+
+def test_load_contract(tmp_path):
+    contract = tmp_path / "contract.yaml"
+    contract.write_text(
+        """
+    columns:
+      email:
+        type: email
+        """,
+        encoding="utf-8",
+    )
+    result = load_contract(contract)
+
+    assert result == {"columns": {"email": {"type": "email"}}}
+
+
+def test_load_contract_suffix(tmp_path):
+    contract = tmp_path / "contract.txt"
+    contract.write_text("test")
+    with pytest.raises(YAMLContractError):
+        load_contract(contract)
+
+
+def test_load_contract_size(tmp_path):
+    contract = tmp_path / "contract.yaml"
+    contract.write_text("")
+    with pytest.raises(YAMLContractError):
+        load_contract(contract)
+
+
+def test_load_contract_with_dir(tmp_path):
+    test_dir = tmp_path / "dir"
+    test_dir.mkdir()
+    with pytest.raises(YAMLContractError):
+        load_contract(test_dir)
+
+
+def test_validate_globale_structure():
+    contract = {"test": 1}
+    result = validate_global_structure(contract)
+    assert result == contract
+
+
+def test_validate_globale_structure_error():
+    invalid_contract: Any = 1
+    with pytest.raises(YAMLContractError):
+        validate_global_structure(invalid_contract)
+
+
+def test_normalize_global_structure():
+    contract = {"columns": {"columns_1": "metadata"}}
+
+    assert normalize_global_structure(contract) == {"columns_1": "metadata"}
+
+
+@pytest.mark.parametrize(
+    "column_name, metadata",
+    [
+        (None, {}),
+        ("  ", {}),
+        ("", {}),
+        ("valid key", ["invalid value"]),
+    ],
+)
+def test_validate_internal_structure_errors(column_name, metadata):
+    with pytest.raises(YAMLContractError):
+        validate_internal_structure(column_name, metadata)
+
+
+def test_validate_internal_structure_valid_case():
+    valid_dict = {
+        "key": {"metadata": "value"},
+    }
+    for column_name, metadata in valid_dict.items():
+        result = validate_internal_structure(column_name, metadata)
+    assert result == None
+
+
+@pytest.mark.parametrize(
+    "invalid_type",
+    [
+        {"no_type": "str"},
+        {"type": "invalid"},
+        {"type": 0},
+    ],
+)
+def test_validate_type_invalid_case(invalid_type):
+    with pytest.raises(YAMLContractError):
+        validate_type(invalid_type)
+
+
+def test_validate_type_valid_case():
+    valid_metadata = {"type": "Str "}
+    result = validate_type(valid_metadata)
+    assert result == "str"
+
+
+def test_validate_column_flags_empty():
+    empty_metadata = {"type": "str"}
+    result = validate_column_flags(empty_metadata)
+    assert result == {
+        "type": "str",
+        "required": False,
+        "unique": False,
+        "nullable": False,
+    }
+
+
+def test_validate_column_flags_valid_case():
+    metadata = {"type": "str", "required": False, "unique": True, "nullable": False}
+    result = validate_column_flags(metadata)
+    assert result == {
+        "type": "str",
+        "required": False,
+        "unique": True,
+        "nullable": False,
+    }
+
+
+def test_validate_column_flags_invalid_case():
+    metadata = {"type": "str", "required": "False", "unique": True, "nullable": False}
+    with pytest.raises(YAMLContractError):
+        validate_column_flags(metadata)
