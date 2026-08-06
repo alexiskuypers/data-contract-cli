@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from src.data_contract_cli.logging_config import configure_logging
+from data_contract_cli.logging_config import configure_logging
 
 
 def test_configure_logging(tmp_path, monkeypatch):
