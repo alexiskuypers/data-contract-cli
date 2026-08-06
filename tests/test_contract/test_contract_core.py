@@ -1,8 +1,8 @@
 import pytest, yaml
 from typing import Any
 
-from src.data_contract_cli.exceptions import ApplicationError, YAMLContractError
-from src.data_contract_cli.contract import (
+from data_contract_cli.exceptions import ApplicationError, YAMLContractError
+from data_contract_cli.contract import (
     RULES,
     TRANSFORMATION,
     load_contract,
