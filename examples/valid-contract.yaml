@@ -1,6 +1,9 @@
 # YAML contract
 
 
+delimiter: ";"
+encoding: utf-8-sig
+
 columns:
   invoice_id:
     type: str
@@ -73,6 +76,3 @@ columns:
     rules: {allowed_values: [paid, pending, cancelled]}
     transformations: [strip, lower]
 
-
-delimiter: ";"
-encoding: utf-8-sig

@@ -1,6 +1,12 @@
 # YAML contract
 
 
+# Supported delimiters: ",", ";".
+delimiter: ","
+
+# Supported encodings: "utf-8", "utf-8-sig".
+encoding: "utf-8"
+
 # Add each CSV column under "columns".
 # Use the CSV header as the column name.
 
@@ -16,8 +22,3 @@
 # Add name, type, required, nullable, unique, rules and transformations
 columns: {}
 
-# Supported delimiters: ",", ";".
-delimiter: ","
-
-# Supported encodings: "utf-8", "utf-8-sig".
-encoding: "utf-8"
