@@ -7,7 +7,7 @@ from data_contract_cli.contract import (
     RULES,
     TRANSFORMATION,
     validate_rules_structure,
-    normalize_rules,
+    normalize_rule_names,
     validate_rules,
     validate_regex,
     verify_rules_type,
@@ -40,10 +40,16 @@ def test_validate_rules_structure_invalid_case():
         validate_rules_structure(column, metadata)
 
 
-def test_normalize_rules_valid_case():
+def test_normalize_rule_names_valid_case():
     rules = {"maX": 5, "Min": 2, "allowed_values": [1, 5]}
-    result = normalize_rules(rules)
+    result = normalize_rule_names(rules)
     assert result == {"max": 5, "min": 2, "allowed_values": [1, 5]}
+
+
+def test_normalize_rule_names_invalid_case():
+    rules = {7: None}
+    with pytest.raises(YAMLContractError):
+        normalize_rule_names(rules)
 
 
 def test_validate_rules_valid_case():
@@ -54,6 +60,7 @@ def test_validate_rules_valid_case():
         "regex": "str",
         "starts_with": "str",
         "ends_with": "str",
+        "min_length": 6,
     }
     result = validate_rules(rules)
     assert result == None
@@ -191,7 +198,11 @@ def test_validate_allowed_values_invalid_case(invalid_rules, column_type):
             },
         ),
         (
-            {"max": "5", "min": "2", "allowed_values": ["1", "2"]},
+            {
+                "max": "5",
+                "min": "2",
+                "allowed_values": ["1", "2"],
+            },
             {
                 "max": Decimal("5"),
                 "min": Decimal("2"),

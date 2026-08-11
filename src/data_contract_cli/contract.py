@@ -1,6 +1,6 @@
-from .exceptions import ApplicationError, YAMLContractError
+from data_contract_cli.exceptions import ApplicationError, YAMLContractError
 from pathlib import Path
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 import logging, re, yaml
 
 VALID_TYPE = [
@@ -24,8 +24,8 @@ TRANSFORMATION = [
 RULES = [
     "min",
     "max",
-    "min_lenght",
-    "max_lenght",
+    "min_length",
+    "max_length",
     "allowed_values",
     "regex",
     "starts_with",
@@ -187,14 +187,18 @@ def validate_rules_structure(column: str, metadata: dict) -> dict:
     return rules
 
 
-def normalize_rules(rules: dict) -> dict:
-    """Normalize rule names by trimming whitespace and converting them to lowercase."""
+def normalize_rule_names(rules: dict) -> dict:
+    """Validate and normalize rule names by stripping whitespace and converting them to lowercase."""
     normalized_rules = {}
 
     for rule_name, value in rules.items():
-        if isinstance(rule_name, str):
-            rule_name = rule_name.strip().lower()
-            normalized_rules[rule_name] = value
+        if not isinstance(rule_name, str):
+            raise YAMLContractError(
+                f"Rule name must be a string, got {type(rule_name).__name__}."
+            )
+
+        rule_name = rule_name.strip().lower()
+        normalized_rules[rule_name] = value
 
     return normalized_rules
 
@@ -203,9 +207,6 @@ def validate_rules(normalized_rules) -> None:
     """Validate rule names and their expected value types."""
     errors = []
     for key, value in normalized_rules.items():
-        if not isinstance(key, str):
-            errors.append(f"Rule name must be a string, got {type(key).__name__}.")
-
         if key not in RULES:
             errors.append(f"Unsupported rule '{key}'.")
 
@@ -232,19 +233,31 @@ def validate_rules(normalized_rules) -> None:
 def convert_rules_to_decimal(rules: dict) -> dict:
     """Convert numeric rule values to Decimal instances."""
     for rule_name, rule_value in rules.items():
+        if rule_name not in ("min", "max", "allowed_values"):
+            continue
 
         if isinstance(rule_value, list):
             converted_values = []
 
             for raw_value in rule_value:
-                decimal_value = Decimal(str(raw_value))
+                try:
+                    decimal_value = Decimal(str(raw_value))
+                except InvalidOperation:
+                    raise YAMLContractError(
+                        f"rules value '{raw_value} can't be converted in decimal"
+                    )
                 converted_values.append(decimal_value)
 
             if rule_name == "allowed_values":
                 rules["allowed_values"] = converted_values
 
         else:
-            decimal_value = Decimal(str(rule_value))
+            try:
+                decimal_value = Decimal(str(rule_value))
+            except InvalidOperation:
+                raise YAMLContractError(
+                    f"rules value '{rule_value}' can't be converted in decimal"
+                )
             rules[rule_name] = decimal_value
 
     return rules
@@ -415,7 +428,7 @@ def rules_orchestration(column_name: str, metadata: dict) -> dict:
     if not raw_rules:
         return {}
 
-    normalized_rules = normalize_rules(raw_rules)
+    normalized_rules = normalize_rule_names(raw_rules)
     if metadata["type"] == "decimal":
         normalized_rules = convert_rules_to_decimal(normalized_rules)
 
