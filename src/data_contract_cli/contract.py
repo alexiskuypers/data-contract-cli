@@ -64,13 +64,38 @@ def validate_global_structure(raw_contract: dict) -> dict:
         )
 
 
-def normalize_global_structure(raw_contract: dict) -> dict:
+def resolve_delimiter(raw_contract: dict) -> str:
+    for key, value in raw_contract.items():
+        if key == "delimiter":
+            if value not in (",", ";"):
+                raise YAMLContractError(f"Key '{key}' has an invalid value.")
+            return value
+    return ","
+
+
+def resolve_encoding(raw_contract: dict) -> str:
+    for key, value in raw_contract.items():
+        if key == "encoding":
+            if value not in ("utf-8", "utf-8-sig"):
+                raise YAMLContractError(f"Key '{key}' has an invalid value.")
+            return value
+    return "utf-8"
+
+
+def extract_columns(raw_contract: dict) -> dict:
     """Remove the top-level columns wrapper from the YAML contract."""
     structured_yaml_contract = {}
 
-    for column, column_names in raw_contract.items():
-        for name, metadata in column_names.items():
-            structured_yaml_contract[name] = metadata
+    if "columns" in raw_contract:
+        if not isinstance(raw_contract["columns"], dict):
+            raise YAMLContractError(f"invalid yaml contract, key: 'columns' isn't dict")
+    else:
+        raise YAMLContractError(f"invalid yaml contract, key: 'columns' missing")
+
+    columns = raw_contract["columns"]
+
+    for column_name, metadata in columns.items():
+        structured_yaml_contract[column_name] = metadata
 
     return structured_yaml_contract
 
@@ -418,11 +443,17 @@ def transformations_orchestration(metadata: dict) -> list:
 
 def orchestration(path: Path) -> dict:
     """Load, validate, and normalize the complete YAML contract."""
-    raw_contract = load_contract(path)
-    validated_structure = validate_global_structure(raw_contract)
-    normalized_contract = normalize_global_structure(validated_structure)
 
     validated_contract = {}
+    logger.info(f"start validation of yaml")
+
+    raw_contract = load_contract(path)
+    validated_structure = validate_global_structure(raw_contract)
+
+    validated_contract["delimiter"] = resolve_delimiter(raw_contract)
+    validated_contract["encoding"] = resolve_encoding(raw_contract)
+
+    normalized_contract = extract_columns(validated_structure)
 
     for column_name, metadata in normalized_contract.items():
         validate_internal_structure(column_name, metadata)

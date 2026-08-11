@@ -72,3 +72,7 @@ columns:
     unique: false
     rules: {allowed_values: [paid, pending, cancelled]}
     transformations: [strip, lower]
+
+
+delimiter: ";"
+encoding: utf-8-sig

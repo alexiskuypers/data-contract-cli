@@ -8,9 +8,11 @@ from data_contract_cli.contract import (
     load_contract,
     validate_global_structure,
     validate_internal_structure,
-    normalize_global_structure,
+    extract_columns,
     validate_type,
     validate_column_flags,
+    resolve_encoding,
+    resolve_delimiter,
 )
 
 
@@ -62,10 +64,10 @@ def test_validate_globale_structure_error():
         validate_global_structure(invalid_contract)
 
 
-def test_normalize_global_structure():
+def test_extract_columns():
     contract = {"columns": {"columns_1": "metadata"}}
 
-    assert normalize_global_structure(contract) == {"columns_1": "metadata"}
+    assert extract_columns(contract) == {"columns_1": "metadata"}
 
 
 @pytest.mark.parametrize(
@@ -136,3 +138,39 @@ def test_validate_column_flags_invalid_case():
     metadata = {"type": "str", "required": "False", "unique": True, "nullable": False}
     with pytest.raises(YAMLContractError):
         validate_column_flags(metadata)
+
+
+def test_resolve_delimiter_valid():
+    delimiter = {"delimiter": ";"}
+    result = resolve_delimiter(delimiter)
+    assert result == ";"
+
+
+def test_resolve_delimiter_invalid():
+    delimiter = {"delimiter": "utf-8"}
+    with pytest.raises(YAMLContractError):
+        resolve_delimiter(delimiter)
+
+
+def test_resolve_delimiter_default_value():
+    delimiter = {}
+    result = resolve_delimiter(delimiter)
+    assert result == ","
+
+
+def test_resolve_encoding_valid():
+    encoding = {"encoding": "utf-8"}
+    result = resolve_encoding(encoding)
+    assert result == "utf-8"
+
+
+def test_resolve_encoding_default_value():
+    encoding = {}
+    result = resolve_encoding(encoding)
+    assert result == "utf-8"
+
+
+def test_resolve_encoding_invalid():
+    encoding = {"encoding": " "}
+    with pytest.raises(YAMLContractError):
+        resolve_encoding(encoding)

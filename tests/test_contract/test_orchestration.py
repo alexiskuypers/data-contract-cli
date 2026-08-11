@@ -129,6 +129,9 @@ def test_orchestration(tmp_path):
         - strip
         - collapse_space
         - title
+
+    delimiter: ","
+    encoding: "utf-8"
                         """)
 
     contract_yaml = tmp_path / "contract.yaml"
@@ -151,6 +154,8 @@ def test_orchestration(tmp_path):
             "rules": {},
             "transformations": ["strip", "collapse_space", "title"],
         },
+        "delimiter": ",",
+        "encoding": "utf-8",
     }
 
 

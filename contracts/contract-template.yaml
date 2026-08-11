@@ -14,5 +14,10 @@
 #    transformations: [strip, title]
 
 # Add name, type, required, nullable, unique, rules and transformations
-
 columns: {}
+
+# Supported delimiters: ",", ";".
+delimiter: ","
+
+# Supported encodings: "utf-8", "utf-8-sig".
+encoding: "utf-8"
