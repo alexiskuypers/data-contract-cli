@@ -1,4 +1,5 @@
 from data_contract_cli.exceptions import ApplicationError, YAMLContractError
+from data_contract_cli.contract_models import Contract, Columns_Contract
 from pathlib import Path
 from decimal import Decimal, InvalidOperation
 import logging, re, yaml
@@ -16,7 +17,7 @@ TRANSFORMATION = [
     "lower",
     "upper",
     "title",
-    "collapse_space",
+    "collapse_spaces",
     "remove_accent",
     "format_decimal",
     "normalize_date",
@@ -400,7 +401,7 @@ def validate_transformation(
         elif transformation in (
             "upper",
             "title",
-            "collapse_space",
+            "collapse_spaces",
             "remove_accent",
         ):
             if column_type != "str":
@@ -454,7 +455,55 @@ def transformations_orchestration(metadata: dict) -> list:
     return normalized_transformations
 
 
-def orchestration(path: Path) -> dict:
+def build_contract(contract: dict) -> Contract:
+    """Build a Contract object from validated contract data."""
+    columns = {}
+    headers = []
+    for key, metadata in contract.items():
+        if key == "delimiter":
+            delimiter = metadata
+
+        elif key == "encoding":
+            encoding = metadata
+
+        else:
+            column_object = build_column(key, metadata)
+            headers.append(column_object.column_name)
+            columns[key] = column_object
+
+    contract_object = Contract(
+        delimiter=delimiter,
+        encoding=encoding,
+        columns=columns,
+        headers=headers,
+    )
+    return contract_object
+
+
+def build_column(column_name: str, metadata: dict) -> Columns_Contract:
+    """Build a Column_Contract object from a loop of Contract object."""
+    column_name = column_name
+    column_type = metadata["type"]
+    required = metadata["required"]
+    nullable = metadata["nullable"]
+    unique = metadata["unique"]
+    rules = metadata["rules"]
+    transformations = metadata["transformations"]
+
+    column = Columns_Contract(
+        column_name=column_name,
+        column_type=column_type,
+        required=required,
+        nullable=nullable,
+        unique=unique,
+        rules=rules,
+        transformations=transformations,
+    )
+
+    return column
+
+
+def orchestration(path: Path) -> Contract:
     """Load, validate, and normalize the complete YAML contract."""
 
     validated_contract = {}
@@ -479,17 +528,6 @@ def orchestration(path: Path) -> dict:
         validated_contract[column_name] = metadata
 
     logger.info("Contract validated successfully")
+    contract = build_contract(validated_contract)
 
-    return validated_contract
-
-
-def main() -> None:
-    """Run the contract validation module manually."""
-    contract_path = Path("contract01.yaml")
-    validated_contract = orchestration(contract_path)
-
-    print(validated_contract)
-
-
-if __name__ == "__main__":
-    main()
+    return contract
