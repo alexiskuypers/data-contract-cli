@@ -48,7 +48,7 @@ def test_normalize_transformation():
 @pytest.mark.parametrize(
     "valid_transformation, valid_type",
     [
-        (["upper", "title", "collapse_space", "remove_accent"], "str"),
+        (["upper", "title", "collapse_spaces", "remove_accent"], "str"),
         (["strip", "lower"], "str"),
         (["strip", "lower"], "email"),
         (["format_decimal"], ("decimal")),
@@ -69,7 +69,7 @@ def test_validate_transformation_valid_case(valid_transformation, valid_type):
         (["strip", "lower"], "date"),
         (["format_decimal"], "date"),
         (["normalize_date"], "str"),
-        (["upper", "title", "collapse_space", "remove_accent"], "bool"),
+        (["upper", "title", "collapse_spaces", "remove_accent"], "bool"),
     ],
 )
 def test_validate_transformation_invalid_case(invalid_transformation, column_type):

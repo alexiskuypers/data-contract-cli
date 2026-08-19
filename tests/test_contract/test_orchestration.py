@@ -4,6 +4,7 @@ from decimal import Decimal
 
 
 from data_contract_cli.exceptions import ApplicationError, YAMLContractError
+from data_contract_cli.contract_models import Columns_Contract, Contract
 from data_contract_cli.contract import (
     RULES,
     TRANSFORMATION,
@@ -106,56 +107,51 @@ def test_transformations_orchestration_invalid_case(invalid_transformation):
 
 def test_orchestration(tmp_path):
     content = dedent("""\
-    columns:
-      invoice_id:
-        type: str
-        required: true
-        nullable: false
-        unique: true
-        rules:
-          starts_with: 'INV-'
-        transformations:
-        - strip
-        - lower
+            delimiter: ";"
+            encoding: utf-8-sig
 
-      customer_name:
-        type: str
-        required: true
-        nullable: false
-        unique: false
-        rules:
-          {}
-        transformations:
-        - strip
-        - collapse_space
-        - title
+            columns:
+                invoice_id:
+                    type: str
+                    required: true
+                    nullable: false
+                    unique: true
+                    rules: {starts_with: "INV-"}
+                    transformations: [strip, upper]
 
-    delimiter: ","
-    encoding: "utf-8"
+                customer_name:
+                    type: str
+                    required: true
+                    nullable: false
+                    unique: false
+                    rules: {}
+                    transformations: [strip, collapse_spaces, title]
                         """)
 
     contract_yaml = tmp_path / "contract.yaml"
     contract_yaml.write_text(content)
     result = orchestration(contract_yaml)
-    assert result == {
-        "invoice_id": {
-            "type": "str",
-            "required": True,
-            "nullable": False,
-            "unique": True,
-            "rules": {"starts_with": "INV-"},
-            "transformations": ["strip", "lower"],
-        },
-        "customer_name": {
-            "type": "str",
-            "required": True,
-            "nullable": False,
-            "unique": False,
-            "rules": {},
-            "transformations": ["strip", "collapse_space", "title"],
-        },
-        "delimiter": ",",
-        "encoding": "utf-8",
+    flag = False
+    assert result.headers == ["invoice_id", "customer_name"]
+    assert result.delimiter == ";"
+    assert result.encoding == "utf-8-sig"
+    assert vars(result.columns["invoice_id"]) == {
+        "column_name": "invoice_id",
+        "column_type": "str",
+        "required": True,
+        "nullable": False,
+        "unique": True,
+        "rules": {"starts_with": "INV-"},
+        "transformations": ["strip", "upper"],
+    }
+    assert vars(result.columns["customer_name"]) == {
+        "column_name": "customer_name",
+        "column_type": "str",
+        "required": True,
+        "nullable": False,
+        "unique": False,
+        "rules": {},
+        "transformations": ["strip", "collapse_spaces", "title"],
     }
 
 

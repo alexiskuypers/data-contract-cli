@@ -2,6 +2,7 @@ import pytest, yaml
 from typing import Any
 
 from data_contract_cli.exceptions import ApplicationError, YAMLContractError
+from data_contract_cli.contract_models import Contract, Columns_Contract
 from data_contract_cli.contract import (
     RULES,
     TRANSFORMATION,
@@ -13,6 +14,8 @@ from data_contract_cli.contract import (
     validate_column_flags,
     resolve_encoding,
     resolve_delimiter,
+    build_contract,
+    build_column,
 )
 
 
@@ -174,3 +177,58 @@ def test_resolve_encoding_invalid():
     encoding = {"encoding": " "}
     with pytest.raises(YAMLContractError):
         resolve_encoding(encoding)
+
+
+def test_build_contract_object():
+    valid_contract = {
+        "delimiter": ";",
+        "encoding": "utf-8-sig",
+        "invoice_id": {
+            "type": "str",
+            "required": True,
+            "nullable": False,
+            "unique": True,
+            "rules": {"starts_with": "INV-"},
+            "transformations": ["strip", "upper"],
+        },
+        "customer_name": {
+            "type": "str",
+            "required": True,
+            "nullable": False,
+            "unique": False,
+            "rules": {},
+            "transformations": ["strip", "collapse_spaces", "title"],
+        },
+    }
+    result = build_contract(valid_contract)
+    assert isinstance(result, Contract)
+    assert result.encoding == "utf-8-sig"
+    assert result.delimiter == ";"
+    assert result.headers == ["invoice_id", "customer_name"]
+    assert isinstance(result.columns, dict)
+    assert isinstance(result.columns["invoice_id"], Columns_Contract)
+    assert isinstance(result.columns["customer_name"], Columns_Contract)
+
+
+def test_build_column():
+    metadata = {
+        "type": "str",
+        "required": True,
+        "nullable": False,
+        "unique": False,
+        "rules": {"max": 5},
+        "transformations": ["strip"],
+    }
+    column_name = "name"
+    result = build_column(column_name=column_name, metadata=metadata)
+
+    assert isinstance(result, Columns_Contract)
+    assert result.column_name == "name"
+    assert result.required is True
+    assert result.column_type == "str"
+    assert result.unique is False
+    assert result.nullable is False
+    assert isinstance(result.rules, dict)
+    assert result.rules == {"max": 5}
+    assert isinstance(result.transformations, list)
+    assert result.transformations == ["strip"]
