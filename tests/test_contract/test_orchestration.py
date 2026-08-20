@@ -10,7 +10,7 @@ from data_contract_cli.contract import (
     TRANSFORMATION,
     rules_orchestration,
     transformations_orchestration,
-    orchestration,
+    load_and_validate_contract,
 )
 
 
@@ -105,7 +105,7 @@ def test_transformations_orchestration_invalid_case(invalid_transformation):
         transformations_orchestration(invalid_transformation)
 
 
-def test_orchestration(tmp_path):
+def test_load_and_validate_contract(tmp_path):
     content = dedent("""\
             delimiter: ";"
             encoding: utf-8-sig
@@ -130,7 +130,7 @@ def test_orchestration(tmp_path):
 
     contract_yaml = tmp_path / "contract.yaml"
     contract_yaml.write_text(content)
-    result = orchestration(contract_yaml)
+    result = load_and_validate_contract(contract_yaml)
     flag = False
     assert result.headers == ["invoice_id", "customer_name"]
     assert result.delimiter == ";"
@@ -155,7 +155,7 @@ def test_orchestration(tmp_path):
     }
 
 
-def test_orchestration_invalid_case(tmp_path):
+def test_load_and_validate_contract_invalid_case(tmp_path):
     content = dedent("""\
     customer_name:
       type: int
@@ -169,4 +169,4 @@ def test_orchestration_invalid_case(tmp_path):
     contract_yaml = tmp_path / "contract.yaml"
     contract_yaml.write_text(content)
     with pytest.raises(YAMLContractError):
-        orchestration(contract_yaml)
+        load_and_validate_contract(contract_yaml)
