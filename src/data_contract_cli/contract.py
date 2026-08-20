@@ -503,7 +503,7 @@ def build_column(column_name: str, metadata: dict) -> Columns_Contract:
     return column
 
 
-def orchestration(path: Path) -> Contract:
+def load_and_validate_contract(path: Path) -> Contract:
     """Load, validate, and normalize the complete YAML contract."""
 
     validated_contract = {}
