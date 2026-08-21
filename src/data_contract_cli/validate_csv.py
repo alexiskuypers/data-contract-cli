@@ -9,10 +9,10 @@ logger = logging.getLogger(__name__)
 
 
 def load_csv(path: Path, contract: Contract) -> dict:
-    "load the csv file and return dict with  raw headers and raw rows."
+    """Load a CSV file and return its raw headers and rows."""
     raw_csv_rows = []
     if not path.is_file():
-        raise CSVError(f"'{path}' isn't valid file")
+        raise CSVError(f"'{path}' isn't a valid file")
 
     if path.stat().st_size == 0:
         raise CSVError(f"'{path}' is empty")
@@ -34,15 +34,15 @@ def load_csv(path: Path, contract: Contract) -> dict:
 
 
 def validate_headers(raw_structure: dict, contract: Contract) -> None:
-    "compare the raw headers extracts from csv and the headers from contract."
+    """ "Validate CSV headers against the contract headers."""
     errors = []
     headers = raw_structure["headers"]
 
     if not isinstance(headers, list):
-        raise CSVError(f"headers: '{headers}' isn't valid")
+        raise CSVError(f"CSV headers must be a list, received: {headers}.")
 
     if len(headers) != len(set(headers)):
-        raise CSVError("Column of headers isn't unique")
+        raise CSVError("CSV header names must be unique.")
 
     if headers == contract.headers:
         return
@@ -50,13 +50,11 @@ def validate_headers(raw_structure: dict, contract: Contract) -> None:
     for column_name in contract.headers:
         if column_name not in headers:
             errors.append(column_name)
-            raise CSVError(
-                f"headers: '{headers}' isn't valid, their contains errors: {errors}"
-            )
+            raise CSVError(f"CSV headers do not match the contract. ")
 
 
 def is_rows_empty(raw_csv_rows: list) -> None:
-    "Return an error if the rows inside the list is empty."
+    """Raise CSVError if the CSV contains no non-empty data rows."""
     flag = False
     for row in raw_csv_rows:
         for item in row:
@@ -64,11 +62,11 @@ def is_rows_empty(raw_csv_rows: list) -> None:
                 flag = True
                 return
     if flag is False:
-        raise CSVError(f"csv rows is empty.")
+        raise CSVError(f"Csv rows is empty.")
 
 
 def get_valid_rows(row: list, index: int, contract: Contract) -> dict:
-    "Return a dict with valid rows, it index, and a dict with useful data."
+    """Build the structured representation of a valid CSV row."""
     column_and_values = {}
 
     for second_index, column in enumerate(contract.headers, start=0):
@@ -78,26 +76,25 @@ def get_valid_rows(row: list, index: int, contract: Contract) -> dict:
 
 
 def get_invalid_rows(row: list, index: int, errors: list) -> dict:
-    "Return a dict with invalid row, her index and why it is invalid."
+    """Build the structured representation of an invalid CSV row."""
 
     return {"index": index, "row": row, "errors": errors}
 
 
 def separate_csv_rows(contract: Contract, raw_csv_rows: list) -> dict:
-    """Validate csv rows with verify length of rows, empty rows, invalid rows
-    and return dict with a list of valid rows and invalid rows."""
+    """Validate and separate CSV rows into valid and invalid lists."""
     data_structure = {"valid_rows": [], "invalid_rows": []}
     for index, row in enumerate(raw_csv_rows, start=1):
 
         errors = []
         if len(row) > len(contract.headers):
-            errors.append("number of columns exceeds the header.")
+            errors.append("Row contains more columns than expected.")
 
         if len(row) < len(contract.headers):
-            errors.append("number of columns less than the header.")
+            errors.append("Row contains fewer columns than expected.")
 
         if not row:
-            errors.append("row is empty.")
+            errors.append("Row is empty.")
 
         if errors:
             data_structure["invalid_rows"].append(
@@ -115,6 +112,7 @@ def load_and_validate_csv(
     path: Path,
     contract: Contract,
 ) -> dict:
+    """Load a CSV file, validate its structure, and classify its rows."""
     logger.info(f"Started CSV structural validation: {path}")
     raw_structure = load_csv(path=path, contract=contract)
     validate_headers(raw_structure=raw_structure, contract=contract)
@@ -128,7 +126,7 @@ def load_and_validate_csv(
             f"file: {path}, "
             f"total rows: {len(raw_csv_rows)}, "
             f"valid rows: {len(valid_csv['valid_rows'])}, "
-            f"invalid rows: {len(valid_csv['invalid_rows'])}, "
+            f"invalid rows: {len(valid_csv['invalid_rows'])} "
         )
 
     else:

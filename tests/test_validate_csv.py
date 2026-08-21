@@ -136,7 +136,7 @@ def test_separate_rows(valid_contract: Contract):
             {
                 "index": 2,
                 "row": ["2", "test2", "13/08"],
-                "errors": ["number of columns exceeds the header"],
+                "errors": ["Row contains more columns than expected."],
             },
         ],
     }
@@ -152,8 +152,8 @@ def test_separate_rows(valid_contract: Contract):
                     "index": 1,
                     "row": [],
                     "errors": [
-                        "number of columns less than the header",
-                        "row is empty",
+                        "Row contains fewer columns than expected.",
+                        "Row is empty.",
                     ],
                 }
             ],
@@ -164,7 +164,7 @@ def test_separate_rows(valid_contract: Contract):
                 {
                     "index": 1,
                     "row": ["name"],
-                    "errors": ["number of columns less than the header"],
+                    "errors": ["Row contains fewer columns than expected."],
                 }
             ],
         ),
@@ -174,7 +174,7 @@ def test_separate_rows(valid_contract: Contract):
                 {
                     "index": 1,
                     "row": ["1", "test", "18/08"],
-                    "errors": ["number of columns exceeds the header"],
+                    "errors": ["Row contains more columns than expected."],
                 }
             ],
         ),
